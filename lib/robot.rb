@@ -54,6 +54,7 @@ class Robot
 
   def pick_up(item)
     return false if (@items_weight + item.weight > @capacity)
+    item.feed(self) if (item.class <= BoxOfBolts && self.health <= 80)
     @equipped_weapon = item.class < Weapon ? item : nil
     @items << item
     @items_weight += item.weight
@@ -67,18 +68,15 @@ class Robot
     else
       remainder -= amount
     end
-    @health -= remainder < 0 ? remainder.abs : 0
-    @health = @health < 0 ? 0 : @health
+    @health = [0, @health - remainder].max
   end
 
   def heal_shield(amount) 
-    @shield += amount
-    @shield = @max_shield if @shield > @max_shield
+    @shield = [@max_shield, @shield + amount].max
   end
 
   def heal(amount)
-    @health += amount
-    @health = @health > @max_health ? @max_health : @health
+    @health = [@max_health, @health + amount].max
   end
 
   def heal!(amount)
@@ -88,8 +86,11 @@ class Robot
   end
 
   def attack(enemy)
+    # print scan.class
+    return false if !can_attack(enemy)
     if @equipped_weapon
       @equipped_weapon.hit(enemy)
+      @equipped_weapon = nil
     else
       enemy.wound(@default_attack)
     end
@@ -101,6 +102,13 @@ class Robot
     end
   end  
 
+  def can_attack(target)
+    x_offset = @equipped_weapon ? @equipped_weapon.range : 0
+    y_offset = @equipped_weapon ? @equipped_weapon.range : 0
+    x = (self.position[0] - target.position[0]).abs
+    y = (self.position[1] - target.position[1]).abs
+    (x <= 1  + x_offset && y <= 1 + y_offset) #can attack diagonally
+  end
   def special_attack(x, y)
     robots = scan(x, y)
     puts robots.inspect
