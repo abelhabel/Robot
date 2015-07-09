@@ -6,6 +6,7 @@ class Weapon < Item
     @name = name
     @weight = weight
     @damage = damage
+    @shield_penetration = false
   end
 
   def hit(who)
