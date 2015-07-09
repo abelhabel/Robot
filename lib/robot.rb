@@ -103,6 +103,7 @@ class Robot
 
   def special_attack(x, y)
     robots = scan(x, y)
+    puts robots.inspect
     robots.each { |r| r[0].wound(@special_weapon.damage, @special_weapon.shield_penetration)}
   end
 
